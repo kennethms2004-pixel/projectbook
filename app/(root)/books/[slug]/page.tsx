@@ -1,7 +1,7 @@
 import { auth } from "@clerk/nextjs/server";
 import { ArrowLeft } from "lucide-react";
 import Link from "next/link";
-import { redirect } from "next/navigation";
+import { notFound, redirect } from "next/navigation";
 
 import { BookConversation } from "@/components/book-conversation";
 import { getBookBySlug } from "@/lib/actions/book.actions";
@@ -23,7 +23,7 @@ export default async function BookDetailPage({ params }: BookPageProps) {
   const result = await getBookBySlug(slug, userId);
 
   if (!result.success || !result.data) {
-    redirect("/");
+    notFound();
   }
 
   const book = result.data;

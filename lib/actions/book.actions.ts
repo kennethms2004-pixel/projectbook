@@ -43,8 +43,10 @@ function logServerError(scope: string, error: unknown) {
   console.error(`[book.actions:${scope}]`, error);
 }
 
-async function findBookBySlug(slug: string, userId?: string) {
-  const query = userId ? { slug, clerkId: userId } : { slug };
+async function findBookBySlug(slug: string, clerkId?: string) {
+  const query: Record<string, string> = { slug };
+  if (clerkId) query.clerkId = clerkId;
+
   const book = await Book.findOne(query).lean();
 
   return book
@@ -120,12 +122,12 @@ export async function getAllBooks(): Promise<
 
 export async function getBookBySlug(
   slug: string,
-  userId: string
+  clerkId: string
 ): Promise<ActionResult<SerializedBook>> {
   try {
     const normalizedSlug = slug?.trim().toLowerCase();
 
-    if (!normalizedSlug) {
+    if (!normalizedSlug || !clerkId) {
       return {
         success: false,
         message: "Book slug is required.",
@@ -135,7 +137,7 @@ export async function getBookBySlug(
 
     await connectToDatabase();
 
-    const book = await findBookBySlug(normalizedSlug, userId);
+    const book = await findBookBySlug(normalizedSlug, clerkId);
 
     if (!book) {
       return {
@@ -383,38 +385,31 @@ export async function searchBookSegments(
     const escapedKeywords = keywords
       .slice(0, 5)
       .map((word) => word.replace(REGEX_METACHARS, "\\$&"));
-
     const pattern = escapedKeywords.join("|");
+    const scoringRegex = new RegExp(pattern, "gi");
 
     const regexResults = await BookSegment.find({
       bookId,
       content: { $regex: pattern, $options: "i" },
-    }).lean();
+    })
+      .limit(50)
+      .lean();
 
-    const scoredResults = regexResults.map((hit) => {
-      const raw = hit as unknown as Record<string, unknown>;
-      const content = String(raw.content ?? "");
-      const contentLower = content.toLowerCase();
-
-      let score = 0;
-      for (const keyword of escapedKeywords) {
-        const keywordPattern = new RegExp(keyword, "gi");
-        const matches = contentLower.match(keywordPattern);
-        score += matches ? matches.length : 0;
-      }
-
-      return {
-        segmentIndex: Number(raw.segmentIndex ?? 0),
-        pageNumber:
-          typeof raw.pageNumber === "number"
-            ? (raw.pageNumber as number)
-            : undefined,
-        content,
-        score,
-      };
-    });
-
-    return scoredResults
+    return regexResults
+      .map((hit) => {
+        const raw = hit as unknown as Record<string, unknown>;
+        const content = String(raw.content ?? "");
+        const matches = content.match(scoringRegex);
+        return {
+          segmentIndex: Number(raw.segmentIndex ?? 0),
+          pageNumber:
+            typeof raw.pageNumber === "number"
+              ? (raw.pageNumber as number)
+              : undefined,
+          content,
+          score: matches ? matches.length : 0,
+        };
+      })
       .sort((a, b) => b.score - a.score)
       .slice(0, SEARCH_RESULT_LIMIT)
       .map(({ segmentIndex, pageNumber, content }) => ({

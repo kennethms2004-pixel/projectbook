@@ -40,9 +40,10 @@ export async function POST(request: Request): Promise<NextResponse> {
   const shouldHandleCallback =
     process.env.VERCEL === "1" || Boolean(process.env.VERCEL_BLOB_CALLBACK_URL);
 
+  let authenticatedClerkId: string | null = null;
+
   try {
     const body = (await request.json()) as HandleUploadBody;
-    let authenticatedClerkId: string | null = null;
 
     if (body.type === "blob.generate-client-token") {
       const { userId } = await auth();
