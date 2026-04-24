@@ -6,7 +6,6 @@ const VoiceSessionSchema = new Schema<IVoiceSession>(
       type: String,
       required: true,
       trim: true,
-      index: true,
     },
     bookId: {
       type: Schema.Types.ObjectId,

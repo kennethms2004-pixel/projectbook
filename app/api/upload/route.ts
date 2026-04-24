@@ -93,6 +93,8 @@ export async function POST(request: Request): Promise<NextResponse> {
 
     return NextResponse.json(jsonResponse);
   } catch (error) {
+    console.error("[api/upload]", error);
+
     const message = error instanceof Error ? error.message : "Failed to handle upload.";
     const status = message === "Unauthorized" ? 401 : 400;
 

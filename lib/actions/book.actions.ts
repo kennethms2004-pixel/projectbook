@@ -1,5 +1,7 @@
 "use server";
 
+import { revalidatePath } from "next/cache";
+
 import BookSegment from "@/database/models/book-segment.model";
 import Book from "@/database/models/book.model";
 import { connectToDatabase } from "@/database/mongoose";
@@ -115,21 +117,63 @@ export async function getAllBooks(): Promise<
   }
 }
 
+export async function getBookBySlug(
+  slug: string
+): Promise<ActionResult<SerializedBook>> {
+  try {
+    const normalizedSlug = slug?.trim().toLowerCase();
+
+    if (!normalizedSlug) {
+      return {
+        success: false,
+        message: "Book slug is required.",
+        error: "Book slug is required.",
+      };
+    }
+
+    await connectToDatabase();
+
+    const book = await findBookBySlug(normalizedSlug);
+
+    if (!book) {
+      return {
+        success: false,
+        message: "Book not found.",
+        error: "Book not found.",
+      };
+    }
+
+    return {
+      success: true,
+      message: "Book fetched successfully.",
+      data: book,
+    };
+  } catch (error) {
+    logServerError("getBookBySlug", error);
+
+    return {
+      success: false,
+      message: "Failed to fetch book.",
+      error: "Failed to fetch book.",
+    };
+  }
+}
+
 export async function createBook(
   data: CreateBookInput
 ): Promise<ActionResult<{ book: SerializedBook }>> {
+  const slug = generateSlug(data.title);
+
+  if (!slug) {
+    return {
+      success: false,
+      message: "Book title produced an invalid slug.",
+      error: "Book title produced an invalid slug.",
+    };
+  }
+
   try {
     await connectToDatabase();
-
-    const slug = generateSlug(data.title);
-
-    if (!slug) {
-      return {
-        success: false,
-        message: "Book title produced an invalid slug.",
-        error: "Book title produced an invalid slug.",
-      };
-    }
 
     const existingBook = await findBookBySlug(slug);
 
@@ -150,6 +194,8 @@ export async function createBook(
       totalSegments: 0,
     });
 
+    revalidatePath("/");
+
     return {
       success: true,
       message: "Book created successfully.",
@@ -167,8 +213,7 @@ export async function createBook(
       error.code === 11000;
 
     if (isDuplicateKeyError) {
-      const slug = generateSlug(data.title);
-      const existingBook = slug ? await findBookBySlug(slug) : null;
+      const existingBook = await findBookBySlug(slug);
 
       if (existingBook) {
         return {
@@ -208,14 +253,20 @@ export async function saveBookSegments(
       };
     }
 
-    const payload = segments.map((segment, index) => ({
-      clerkId,
-      bookId,
-      segmentIndex: index,
-      content: segment.content.trim(),
-      pageNumber: segment.pageNumber,
-      wordCount: segment.wordCount ?? segment.content.trim().split(/\s+/).length,
-    }));
+    const payload = segments.map((segment, index) => {
+      const trimmedContent = segment.content.trim();
+
+      return {
+        clerkId,
+        bookId,
+        segmentIndex: index,
+        content: trimmedContent,
+        pageNumber: segment.pageNumber,
+        wordCount:
+          segment.wordCount ??
+          (trimmedContent ? trimmedContent.split(/\s+/).length : 0),
+      };
+    });
 
     const savedSegments = await BookSegment.insertMany(payload, { ordered: true });
     const updatedBook = await Book.findOneAndUpdate(
@@ -227,6 +278,9 @@ export async function saveBookSegments(
     if (!updatedBook) {
       throw new Error("Created book could not be updated with segment counts.");
     }
+
+    revalidatePath("/");
+    revalidatePath(`/books/${updatedBook.slug}`);
 
     return {
       success: true,
@@ -249,5 +303,106 @@ export async function saveBookSegments(
       message: "Failed to save book segments.",
       error: "Failed to save book segments.",
     };
+  }
+}
+
+export type SegmentSearchHit = {
+  segmentIndex: number;
+  pageNumber?: number;
+  content: string;
+};
+
+const SEARCH_RESULT_LIMIT = 3;
+const REGEX_METACHARS = /[.*+?^${}()|[\]\\]/g;
+const STOP_WORDS = new Set([
+  "a", "an", "and", "the", "is", "are", "was", "were", "be", "to", "of",
+  "in", "on", "at", "it", "this", "that", "these", "those", "for", "with",
+  "as", "by", "or", "but", "if", "then", "so", "do", "does", "did",
+  "about", "what", "which", "who", "whom", "how", "why", "when", "where",
+]);
+
+function extractKeywords(query: string) {
+  return query
+    .toLowerCase()
+    .split(/[^a-z0-9]+/i)
+    .filter((word) => word.length >= 3 && !STOP_WORDS.has(word));
+}
+
+export async function searchBookSegments(
+  bookId: string,
+  query: string
+): Promise<SegmentSearchHit[]> {
+  const trimmed = query?.trim();
+
+  if (!bookId || !trimmed) {
+    return [];
+  }
+
+  await connectToDatabase();
+
+  try {
+    const textResults = await BookSegment.find(
+      { bookId, $text: { $search: trimmed } },
+      {
+        score: { $meta: "textScore" },
+        content: 1,
+        segmentIndex: 1,
+        pageNumber: 1,
+      }
+    )
+      .sort({ score: { $meta: "textScore" } })
+      .limit(SEARCH_RESULT_LIMIT)
+      .lean();
+
+    if (textResults.length > 0) {
+      return textResults.map((hit) => {
+        const raw = hit as unknown as Record<string, unknown>;
+        return {
+          segmentIndex: Number(raw.segmentIndex ?? 0),
+          pageNumber:
+            typeof raw.pageNumber === "number"
+              ? (raw.pageNumber as number)
+              : undefined,
+          content: String(raw.content ?? ""),
+        };
+      });
+    }
+  } catch (error) {
+    logServerError("searchBookSegments:text", error);
+  }
+
+  const keywords = extractKeywords(trimmed);
+
+  if (keywords.length === 0) {
+    return [];
+  }
+
+  try {
+    const pattern = keywords
+      .slice(0, 5)
+      .map((word) => word.replace(REGEX_METACHARS, "\\$&"))
+      .join("|");
+
+    const regexResults = await BookSegment.find({
+      bookId,
+      content: { $regex: pattern, $options: "i" },
+    })
+      .limit(SEARCH_RESULT_LIMIT)
+      .lean();
+
+    return regexResults.map((hit) => {
+      const raw = hit as unknown as Record<string, unknown>;
+      return {
+        segmentIndex: Number(raw.segmentIndex ?? 0),
+        pageNumber:
+          typeof raw.pageNumber === "number"
+            ? (raw.pageNumber as number)
+            : undefined,
+        content: String(raw.content ?? ""),
+      };
+    });
+  } catch (error) {
+    logServerError("searchBookSegments:regex", error);
+    return [];
   }
 }
