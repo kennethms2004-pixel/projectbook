@@ -1,20 +1,31 @@
 "use client";
 
 import * as React from "react";
+import { useRouter } from "next/navigation";
+import { useUser } from "@clerk/nextjs";
+import { upload } from "@vercel/blob/client";
 import { ImagePlus, Upload } from "lucide-react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { toast } from "sonner";
 
+import {
+  checkBookExists,
+  createBook,
+  saveBookSegments,
+} from "@/lib/actions/book.actions";
 import {
   ACCEPTED_IMAGE_TYPES,
   ACCEPTED_PDF_TYPES,
 } from "@/lib/constants";
+import { parsePdf } from "@/lib/pdf";
+import { generateSlug } from "@/lib/utils";
 import {
   uploadFormDefaults,
   uploadFormSchema,
   type UploadFormInput,
   type UploadFormValues,
-  type VoiceOptionKey,
+  type PersonaOptionKey,
 } from "@/lib/validations";
 import { Button } from "@/components/ui/button";
 import { FileUploadField } from "@/components/file-upload-field";
@@ -30,9 +41,62 @@ import {
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 
+type UploadAssetType = "pdf" | "cover";
+
+function getBookUrl(slug: string) {
+  return `/books/${encodeURIComponent(slug)}`;
+}
+
+function getFileExtension(file: File | Blob, fallbackExtension: string) {
+  if ("name" in file && typeof file.name === "string" && file.name.includes(".")) {
+    return file.name.slice(file.name.lastIndexOf("."));
+  }
+
+  if (file.type === "application/pdf") {
+    return ".pdf";
+  }
+
+  if (file.type === "image/jpeg") {
+    return ".jpg";
+  }
+
+  if (file.type === "image/webp") {
+    return ".webp";
+  }
+
+  if (file.type === "image/png") {
+    return ".png";
+  }
+
+  return fallbackExtension;
+}
+
+async function uploadAsset({
+  assetType,
+  clerkId,
+  file,
+  pathname,
+}: {
+  assetType: UploadAssetType;
+  clerkId: string;
+  file: File | Blob;
+  pathname: string;
+}) {
+  return upload(pathname, file, {
+    access: "public",
+    contentType: file.type || undefined,
+    handleUploadUrl: "/api/upload",
+    clientPayload: JSON.stringify({
+      clerkId,
+      assetType,
+    }),
+  });
+}
+
 export function UploadForm() {
+  const router = useRouter();
+  const { user, isLoaded } = useUser();
   const [isSubmitting, setIsSubmitting] = React.useState(false);
-  const [successMessage, setSuccessMessage] = React.useState<string | null>(null);
 
   const form = useForm<UploadFormInput, unknown, UploadFormValues>({
     resolver: zodResolver(uploadFormSchema),
@@ -40,16 +104,156 @@ export function UploadForm() {
   });
 
   const handleSubmit = async (values: UploadFormValues) => {
-    setSuccessMessage(null);
     setIsSubmitting(true);
 
-    await new Promise((resolve) => setTimeout(resolve, 1600));
+    try {
+      if (!isLoaded || !user) {
+        toast.error("Sign in to upload and ingest a book.");
+        return;
+      }
 
-    setIsSubmitting(false);
-    setSuccessMessage(
-      `Mock submission complete for "${values.title}". Backend upload wiring can plug in next.`
-    );
-    form.reset(uploadFormDefaults);
+      if (!values.pdfFile) {
+        toast.error("Please choose a PDF file before submitting.");
+        return;
+      }
+
+      const duplicateResult = await checkBookExists(values.title);
+
+      if (!duplicateResult.success) {
+        toast.error(duplicateResult.error ?? duplicateResult.message);
+        return;
+      }
+
+      if (duplicateResult.data?.exists && duplicateResult.data.book) {
+        toast.info(`"${values.title}" already exists. Redirecting to the saved book.`);
+        form.reset(uploadFormDefaults);
+        router.push(getBookUrl(duplicateResult.data.book.slug));
+        return;
+      }
+
+      const parsedPdf = await parsePdf(values.pdfFile);
+
+      if (!parsedPdf.fullText.trim() || parsedPdf.segments.length === 0) {
+        toast.error("We couldn't extract readable text from that PDF.");
+        return;
+      }
+
+      const slug = generateSlug(values.title);
+
+      if (!slug) {
+        toast.error("Please use a book title that can be converted into a valid slug.");
+        return;
+      }
+
+      let pdfUpload;
+
+      try {
+        pdfUpload = await uploadAsset({
+          assetType: "pdf",
+          clerkId: user.id,
+          file: values.pdfFile,
+          pathname: `books/${user.id}/pdfs/${slug}${getFileExtension(values.pdfFile, ".pdf")}`,
+        });
+      } catch (error) {
+        toast.error(
+          error instanceof Error ? error.message : "Failed to upload the PDF file."
+        );
+        return;
+      }
+
+      let coverUrl = "/assets/book-cover.svg";
+      let coverBlobKey: string | undefined;
+
+      if (values.coverImage) {
+        try {
+          const coverUpload = await uploadAsset({
+            assetType: "cover",
+            clerkId: user.id,
+            file: values.coverImage,
+            pathname: `books/${user.id}/covers/${slug}${getFileExtension(values.coverImage, ".png")}`,
+          });
+
+          coverUrl = coverUpload.url;
+          coverBlobKey = coverUpload.pathname;
+        } catch (error) {
+          toast.error(
+            error instanceof Error ? error.message : "Failed to upload the cover image."
+          );
+          return;
+        }
+      } else if (parsedPdf.coverImage) {
+        try {
+          const generatedCover = new File(
+            [parsedPdf.coverImage],
+            `${slug}-cover.png`,
+            { type: parsedPdf.coverImage.type || "image/png" }
+          );
+
+          const coverUpload = await uploadAsset({
+            assetType: "cover",
+            clerkId: user.id,
+            file: generatedCover,
+            pathname: `books/${user.id}/covers/${slug}-cover.png`,
+          });
+
+          coverUrl = coverUpload.url;
+          coverBlobKey = coverUpload.pathname;
+        } catch (error) {
+          toast.error(
+            error instanceof Error ? error.message : "Failed to upload the generated cover."
+          );
+          return;
+        }
+      }
+
+      const bookResult = await createBook({
+        clerkId: user.id,
+        title: values.title,
+        author: values.author,
+        persona: values.persona,
+        fileUrl: pdfUpload.url,
+        fileBlobKey: pdfUpload.pathname,
+        fileSize: values.pdfFile.size,
+        coverUrl,
+        coverBlobKey,
+      });
+
+      if (!bookResult.success) {
+        toast.error(bookResult.error ?? bookResult.message);
+        return;
+      }
+
+      if (bookResult.alreadyExists && bookResult.data?.book) {
+        toast.info(`"${values.title}" already exists. Redirecting to the saved book.`);
+        form.reset(uploadFormDefaults);
+        router.push(getBookUrl(bookResult.data.book.slug));
+        return;
+      }
+
+      const createdBook = bookResult.data?.book;
+
+      if (!createdBook) {
+        toast.error("Book creation returned an incomplete response.");
+        return;
+      }
+
+      const segmentResult = await saveBookSegments(
+        createdBook._id,
+        user.id,
+        parsedPdf.segments
+      );
+
+      if (!segmentResult.success) {
+        toast.error(segmentResult.error ?? segmentResult.message);
+        return;
+      }
+
+      form.reset(uploadFormDefaults);
+      toast.success(`"${createdBook.title}" is ready.`);
+      router.push(getBookUrl(createdBook.slug));
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -154,16 +358,16 @@ export function UploadForm() {
 
           <FormField
             control={form.control}
-            name="voice"
+            name="persona"
             render={({ field }) => (
               <FormItem>
                 <FormLabel className="text-2xl font-semibold text-[#332821]">
-                  Choose Assistant Voice
+                  Choose Assistant Persona
                 </FormLabel>
                 <FormControl>
                   <VoiceSelector
                     disabled={isSubmitting}
-                    value={field.value as VoiceOptionKey}
+                    value={field.value as PersonaOptionKey}
                     onChange={field.onChange}
                   />
                 </FormControl>
@@ -181,12 +385,6 @@ export function UploadForm() {
             >
               {isSubmitting ? "Creating experience..." : "Begin Synthesis"}
             </Button>
-
-            {successMessage ? (
-              <p className="text-sm leading-6 text-[#5c4a3d]" aria-live="polite">
-                {successMessage}
-              </p>
-            ) : null}
           </div>
         </form>
       </Form>

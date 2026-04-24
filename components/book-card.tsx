@@ -2,9 +2,11 @@ import Image from "next/image";
 import Link from "next/link";
 
 export function BookCard({ book }: BookCardProps) {
+  const encodedSlug = encodeURIComponent(book.slug);
+
   return (
     <Link
-      href={`/books/${book.slug}`}
+      href={`/books/${encodedSlug}`}
       className="group block rounded-2xl p-2 transition-transform duration-200 hover:-translate-y-1"
     >
       <div
@@ -12,7 +14,7 @@ export function BookCard({ book }: BookCardProps) {
         style={{ backgroundColor: book.coverColor }}
       >
         <Image
-          src={book.coverURL}
+          src={book.coverUrl}
           alt={`Cover of ${book.title} by ${book.author}`}
           fill
           sizes="(max-width: 640px) 40vw, (max-width: 1024px) 24vw, 133px"

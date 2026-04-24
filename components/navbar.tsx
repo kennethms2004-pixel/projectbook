@@ -7,7 +7,7 @@ import {
   useUser,
   UserButton,
 } from "@clerk/nextjs";
-import { AudioLines, BookOpen } from "lucide-react";
+import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 
@@ -59,14 +59,14 @@ export function Navbar() {
           href="/"
           className="text-foreground flex items-center gap-2.5 font-sans font-bold transition-opacity hover:opacity-80"
         >
-          <span className="text-primary relative flex size-9 items-center justify-center">
-            <BookOpen className="size-6" aria-hidden />
-            <AudioLines
-              className="text-primary absolute -right-0.5 -top-0.5 size-3.5"
-              strokeWidth={2.5}
-              aria-hidden
-            />
-          </span>
+          <Image
+            src="/assets/logo.png"
+            alt="Bookified"
+            width={42}
+            height={26}
+            className="h-[26px] w-auto"
+            priority
+          />
           <span className="text-lg font-bold tracking-tight not-underline sm:text-[1.05rem]">
             Bookified
           </span>

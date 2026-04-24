@@ -10,6 +10,7 @@ export function LoadingOverlay({
   return (
     <div
       className="absolute inset-0 z-20 flex flex-col items-center justify-center gap-4 rounded-[2rem] bg-[#fdfcfb]/88 backdrop-blur-sm"
+      role="status"
       aria-live="polite"
       aria-busy="true"
     >

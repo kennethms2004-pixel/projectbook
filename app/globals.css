@@ -8,9 +8,9 @@
   --color-background: var(--background);
   --color-foreground: var(--foreground);
   --font-sans: var(--font-mona-sans), ui-sans-serif, system-ui, sans-serif;
-  --font-serif: var(--font-ibm-plex-serif), ui-serif, Georgia, serif;
-  --font-mono: ui-monospace, "Cascadia Code", "Source Code Pro", Menlo, monospace;
-  --font-heading: var(--font-ibm-plex-serif), ui-serif, Georgia, serif;
+  --font-serif: var(--font-ibm-plex-serif), ui-serif, georgia, serif;
+  --font-mono: ui-monospace, "Cascadia Code", "Source Code Pro", menlo, monospace;
+  --font-heading: var(--font-ibm-plex-serif), ui-serif, georgia, serif;
   --color-sidebar-ring: var(--sidebar-ring);
   --color-sidebar-border: var(--sidebar-border);
   --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
