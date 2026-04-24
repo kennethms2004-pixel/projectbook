@@ -5,6 +5,7 @@ import { revalidatePath } from "next/cache";
 import BookSegment from "@/database/models/book-segment.model";
 import Book from "@/database/models/book.model";
 import { connectToDatabase } from "@/database/mongoose";
+import { checkBookCreationAllowed } from "@/lib/subscriptions.server";
 import { generateSlug, serializeData } from "@/lib/utils";
 
 type ActionResult<T = undefined> = {
@@ -197,6 +198,15 @@ export async function createBook(
           book: existingBook,
         },
         alreadyExists: true,
+      };
+    }
+
+    const limitCheck = await checkBookCreationAllowed();
+    if (!limitCheck.ok) {
+      return {
+        success: false,
+        message: limitCheck.message,
+        error: limitCheck.code,
       };
     }
 

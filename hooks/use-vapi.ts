@@ -30,8 +30,15 @@ type UseVapiBook = {
   persona?: string;
 };
 
+type StartGateResult =
+  | { ok: true; maxSessionSeconds?: number }
+  | { ok: false; message: string };
+
 type UseVapiOptions = {
   book: UseVapiBook;
+  maxSessionSeconds?: number;
+  onBeforeStart?: () => Promise<StartGateResult>;
+  onSessionEnd?: (durationSeconds: number) => void | Promise<void>;
 };
 
 type UseVapiReturn = {
@@ -41,6 +48,7 @@ type UseVapiReturn = {
   isAssistantSpeaking: boolean;
   transcript: TranscriptMessage[];
   elapsedSeconds: number;
+  maxSessionSeconds: number;
   errorMessage: string | null;
   voiceLabel: string;
   start: () => Promise<void>;
@@ -60,9 +68,20 @@ function resolveVoiceLabel(persona?: string) {
   return voiceOptions[DEFAULT_VOICE as keyof typeof voiceOptions].name;
 }
 
-export function useVapi({ book }: UseVapiOptions): UseVapiReturn {
+export function useVapi({
+  book,
+  maxSessionSeconds: initialMaxSessionSeconds,
+  onBeforeStart,
+  onSessionEnd,
+}: UseVapiOptions): UseVapiReturn {
   const vapiRef = useRef<Vapi | null>(null);
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const elapsedRef = useRef(0);
+  const endedRef = useRef(false);
+  const onSessionEndRef = useRef(onSessionEnd);
+  useEffect(() => {
+    onSessionEndRef.current = onSessionEnd;
+  }, [onSessionEnd]);
 
   const [status, setStatus] = useState<VapiStatus>("idle");
   const [isMuted, setIsMuted] = useState(false);
@@ -70,6 +89,9 @@ export function useVapi({ book }: UseVapiOptions): UseVapiReturn {
   const [transcript, setTranscript] = useState<TranscriptMessage[]>([]);
   const [elapsedSeconds, setElapsedSeconds] = useState(0);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [maxSessionSeconds, setMaxSessionSeconds] = useState<number>(
+    initialMaxSessionSeconds ?? 15 * 60
+  );
 
   const voiceId = useMemo(() => resolveVoiceId(book.persona), [book.persona]);
   const voiceLabel = useMemo(
@@ -94,9 +116,12 @@ export function useVapi({ book }: UseVapiOptions): UseVapiReturn {
     const onCallStart = () => {
       setStatus("active");
       setElapsedSeconds(0);
+      elapsedRef.current = 0;
+      endedRef.current = false;
       clearTimer();
       timerRef.current = setInterval(() => {
-        setElapsedSeconds((s) => s + 1);
+        elapsedRef.current += 1;
+        setElapsedSeconds(elapsedRef.current);
       }, 1000);
     };
 
@@ -104,6 +129,13 @@ export function useVapi({ book }: UseVapiOptions): UseVapiReturn {
       setStatus("ended");
       setIsAssistantSpeaking(false);
       clearTimer();
+      if (!endedRef.current) {
+        endedRef.current = true;
+        const cb = onSessionEndRef.current;
+        if (cb) {
+          void Promise.resolve(cb(elapsedRef.current));
+        }
+      }
     };
 
     const onSpeechStart = () => setIsAssistantSpeaking(true);
@@ -193,6 +225,18 @@ export function useVapi({ book }: UseVapiOptions): UseVapiReturn {
       setTranscript([]);
       setStatus("connecting");
 
+      if (onBeforeStart) {
+        const gate = await onBeforeStart();
+        if (!gate.ok) {
+          setStatus("error");
+          setErrorMessage(gate.message);
+          return;
+        }
+        if (typeof gate.maxSessionSeconds === "number") {
+          setMaxSessionSeconds(gate.maxSessionSeconds);
+        }
+      }
+
       try {
         const stream = await navigator.mediaDevices.getUserMedia({
           audio: true,
@@ -230,7 +274,7 @@ export function useVapi({ book }: UseVapiOptions): UseVapiReturn {
         error instanceof Error ? error.message : "Failed to start voice call.",
       );
     }
-  }, [book._id, book.title, book.author, voiceId, voiceLabel]);
+  }, [book._id, book.title, book.author, voiceId, voiceLabel, onBeforeStart]);
 
   const stop = useCallback(async () => {
     const vapi = vapiRef.current;
@@ -261,6 +305,7 @@ export function useVapi({ book }: UseVapiOptions): UseVapiReturn {
     isAssistantSpeaking,
     transcript,
     elapsedSeconds,
+    maxSessionSeconds,
     errorMessage,
     voiceLabel,
     start,

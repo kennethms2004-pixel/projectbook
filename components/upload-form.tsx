@@ -219,7 +219,17 @@ export function UploadForm() {
       });
 
       if (!bookResult.success) {
-        toast.error(bookResult.error ?? bookResult.message);
+        if (bookResult.error === "book_limit_reached") {
+          toast.error(bookResult.message, {
+            action: {
+              label: "Upgrade",
+              onClick: () => router.push("/subscriptions"),
+            },
+            duration: 8000,
+          });
+        } else {
+          toast.error(bookResult.message || bookResult.error || "Failed to create book.");
+        }
         return;
       }
 
