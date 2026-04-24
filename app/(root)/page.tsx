@@ -3,8 +3,11 @@ import Link from "next/link";
 
 import { BookCard } from "@/components/book-card";
 import { buttonVariants } from "@/components/ui/button";
-import { sampleBooks } from "@/lib/constants";
+import { getAllBooks } from "@/lib/actions/book.actions";
 import { cn } from "@/lib/utils";
+
+const FALLBACK_COVER = "/assets/book-cover.svg";
+const DEFAULT_COVER_COLOR = "#f8f4e9";
 
 const steps = [
   {
@@ -24,7 +27,19 @@ const steps = [
   },
 ] as const;
 
-export default function Home() {
+export default async function Home() {
+  const result = await getAllBooks();
+  const realBooks = result.success ? result.data?.books ?? [] : [];
+
+  const books: Book[] = realBooks.map((book) => ({
+    _id: book._id,
+    title: book.title,
+    author: book.author,
+    slug: book.slug,
+    coverUrl: book.coverUrl || FALLBACK_COVER,
+    coverColor: DEFAULT_COVER_COLOR,
+  }));
+
   return (
     <main className="flex flex-1 bg-[#fdfcfb]">
       <div className="mx-auto flex w-full max-w-6xl flex-1 flex-col px-4 py-6 sm:px-6 sm:py-8">
@@ -93,11 +108,32 @@ export default function Home() {
         </section>
 
         <section className="mt-10 pb-12 sm:pb-14">
-          <div className="grid grid-cols-2 gap-x-4 gap-y-8 sm:grid-cols-3 sm:gap-x-6 md:grid-cols-4 lg:grid-cols-5">
-            {sampleBooks.map((book) => (
-              <BookCard key={book._id} book={book} />
-            ))}
-          </div>
+          {books.length > 0 ? (
+            <div className="grid grid-cols-2 gap-x-4 gap-y-8 sm:grid-cols-3 sm:gap-x-6 md:grid-cols-4 lg:grid-cols-5">
+              {books.map((book) => (
+                <BookCard key={book._id} book={book} />
+              ))}
+            </div>
+          ) : (
+            <div className="rounded-[1.2rem] border border-dashed border-[#e4d8c7] bg-white/60 px-6 py-12 text-center">
+              <p className="text-[1.05rem] font-semibold text-[#2e2620]">
+                No books yet.
+              </p>
+              <p className="mt-1 text-[0.92rem] text-[#7c6f63]">
+                Upload your first PDF to start an AI conversation.
+              </p>
+              <Link
+                href="/books/new"
+                className={cn(
+                  buttonVariants({ variant: "outline", size: "lg" }),
+                  "mt-5 inline-flex h-auto rounded-xl border-[#e4d8c7] bg-white px-4 py-3 text-[0.95rem] font-semibold text-[#2a211c] no-underline hover:bg-white"
+                )}
+              >
+                <span className="text-base leading-none">+</span>
+                Add new book
+              </Link>
+            </div>
+          )}
         </section>
       </div>
     </main>

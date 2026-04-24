@@ -80,8 +80,19 @@ export function FileUploadField({
       {value ? (
         <button
           type="button"
-          onClick={() => onChange(null)}
-          className="inline-flex items-center gap-2 rounded-full border border-[#dccfbe] bg-[#fffaf3] px-3 py-1.5 text-sm font-medium text-[#6c5648] transition-colors hover:border-[#c8b8a5] hover:text-[#3d485e]"
+          disabled={disabled}
+          onClick={() => {
+            if (disabled) {
+              return;
+            }
+
+            onChange(null);
+          }}
+          className={cn(
+            "inline-flex items-center gap-2 rounded-full border border-[#dccfbe] bg-[#fffaf3] px-3 py-1.5 text-sm font-medium text-[#6c5648] transition-colors",
+            !disabled && "hover:border-[#c8b8a5] hover:text-[#3d485e]",
+            disabled && "cursor-not-allowed opacity-60"
+          )}
         >
           <X className="size-3.5" aria-hidden />
           Remove file

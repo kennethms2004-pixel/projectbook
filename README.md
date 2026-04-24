@@ -1,36 +1,126 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Projectbook
+
+Projectbook is a Next.js App Router app for browsing a small library UI and uploading a new book PDF to generate an interactive reading experience. The current UI includes a homepage hero, a sample books grid, and a client-side upload form mounted inside a server-rendered page shell.
+
+## Stack
+
+- Next.js 16 App Router
+- React 19
+- Tailwind CSS v4
+- Clerk authentication
+- shadcn-style UI primitives
+- React Hook Form + Zod for upload form validation
 
 ## Getting Started
 
-First, run the development server:
+Install dependencies and start the development server:
 
 ```bash
+npm install
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Open `http://localhost:3000`.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+Useful production commands:
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+```bash
+npm run lint
+npm run build
+npm run start
+```
 
-## Learn More
+## Environment Variables
 
-To learn more about Next.js, take a look at the following resources:
+Create a local env file:
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+```bash
+cp .env.example .env.local
+```
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+Required variables:
 
-## Deploy on Vercel
+- `NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY`
+- `CLERK_SECRET_KEY`
+- `NEXT_PUBLIC_ASSISTANT_ID`
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+Optional Clerk redirect variables may also be needed depending on your auth setup:
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+- `NEXT_PUBLIC_CLERK_SIGN_IN_URL`
+- `NEXT_PUBLIC_CLERK_SIGN_UP_URL`
+- `NEXT_PUBLIC_CLERK_AFTER_SIGN_IN_URL`
+- `NEXT_PUBLIC_CLERK_AFTER_SIGN_UP_URL`
+
+Example:
+
+```env
+NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=pk_test_example
+CLERK_SECRET_KEY=sk_test_example
+NEXT_PUBLIC_ASSISTANT_ID=assistant_example
+NEXT_PUBLIC_CLERK_SIGN_IN_URL=/sign-in
+NEXT_PUBLIC_CLERK_SIGN_UP_URL=/sign-up
+NEXT_PUBLIC_CLERK_AFTER_SIGN_IN_URL=/
+NEXT_PUBLIC_CLERK_AFTER_SIGN_UP_URL=/
+```
+
+## App Structure
+
+- Homepage entry: `app/(root)/page.tsx`
+- Upload page shell: `app/(root)/books/new/page.tsx`
+- Client upload form: `components/upload-form.tsx`
+- Route compatibility redirect: `app/add/page.tsx`
+
+## Usage
+
+### Browse the library
+
+1. Open `/`.
+2. Review the hero section and sample book grid.
+3. Click a book card to navigate to its book slug URL.
+
+### Add a new book
+
+1. Open `/books/new` or use the navbar `Add New` link.
+2. Upload a PDF file.
+3. Optionally upload a cover image.
+4. Enter the book title and author name.
+5. Choose an assistant voice.
+6. Submit the form to run the mocked synthesis flow.
+
+## Validation Notes
+
+- PDF uploads are required and limited to 50MB.
+- Cover images are optional and limited to JPG, PNG, or WebP under 10MB.
+- Voice selection is validated against the configured voice list in `lib/constants.ts`.
+- Submission is currently mocked; no storage or backend ingestion is wired yet.
+
+## Deploy
+
+Build the production bundle first:
+
+```bash
+npm run build
+```
+
+Then run the production server locally with:
+
+```bash
+npm run start
+```
+
+For hosted deployment, configure the same environment variables in your platform before deploying.
+
+## Troubleshooting
+
+- If the app fails on auth routes or protected pages, confirm the Clerk keys are set correctly.
+- If the upload form reports a missing assistant ID, set `NEXT_PUBLIC_ASSISTANT_ID` in `.env.local`.
+- If Open Library covers fail to render, verify the remote image config in `next.config.ts`.
+- If form validation behaves unexpectedly, clear the selected file and re-upload it to re-run client validation cleanly.
+
+## PR Verification Checklist
+
+- Run `npm run lint`.
+- Run `npm run build`.
+- Manually verify `/` renders the hero and books grid inside the shared container.
+- Manually verify `/books/new` is protected by Clerk middleware.
+- Manually verify PDF upload, optional cover upload, voice selection, and loading overlay behavior.

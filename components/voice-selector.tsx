@@ -3,14 +3,14 @@
 import * as React from "react";
 
 import { voiceCategories, voiceOptions } from "@/lib/constants";
-import type { VoiceOptionKey } from "@/lib/validations";
+import type { PersonaOptionKey } from "@/lib/validations";
 import { cn } from "@/lib/utils";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 
 type VoiceSelectorProps = {
   disabled?: boolean;
-  value: VoiceOptionKey;
-  onChange: (value: VoiceOptionKey) => void;
+  value: PersonaOptionKey;
+  onChange: (value: PersonaOptionKey) => void;
 };
 
 function VoiceOptionCard({
@@ -53,24 +53,24 @@ export function VoiceSelector({
   value,
   onChange,
 }: VoiceSelectorProps) {
-  const maleVoices = voiceCategories.male as VoiceOptionKey[];
-  const femaleVoices = voiceCategories.female as VoiceOptionKey[];
+  const maleVoices = voiceCategories.male as PersonaOptionKey[];
+  const femaleVoices = voiceCategories.female as PersonaOptionKey[];
 
   return (
     <RadioGroup
       value={value}
-      onValueChange={(nextValue) => onChange(nextValue as VoiceOptionKey)}
+      onValueChange={(nextValue) => onChange(nextValue as PersonaOptionKey)}
       disabled={disabled}
       className="space-y-5"
     >
       <div className="space-y-3">
         <p className="text-sm font-medium uppercase tracking-[0.18em] text-[#8a7e73]">
-          Male Voices
+          Male Personas
         </p>
         <div className="grid gap-3 md:grid-cols-3">
           {maleVoices.map((key) => {
             const option = voiceOptions[key];
-            const optionId = `voice-${key}`;
+            const optionId = `persona-${key}`;
 
             return (
               <VoiceOptionCard
@@ -89,12 +89,12 @@ export function VoiceSelector({
 
       <div className="space-y-3">
         <p className="text-sm font-medium uppercase tracking-[0.18em] text-[#8a7e73]">
-          Female Voices
+          Female Personas
         </p>
         <div className="grid gap-3 md:grid-cols-2">
           {femaleVoices.map((key) => {
             const option = voiceOptions[key];
-            const optionId = `voice-${key}`;
+            const optionId = `persona-${key}`;
 
             return (
               <VoiceOptionCard

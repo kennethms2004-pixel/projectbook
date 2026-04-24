@@ -9,24 +9,36 @@ import {
   voiceOptions,
 } from "@/lib/constants";
 
-export type VoiceOptionKey = keyof typeof voiceOptions;
+export type PersonaOptionKey = keyof typeof voiceOptions;
 
 const isFile = (value: unknown): value is File =>
   typeof File !== "undefined" && value instanceof File;
 
-const pdfFileSchema = z
-  .custom<File | null>((value) => value === null || isFile(value), {
-    message: "Please upload a valid PDF file.",
-  })
-  .refine((file): file is File => file !== null, {
-    message: "Please upload a PDF file.",
-  })
-  .refine((file) => ACCEPTED_PDF_TYPES.includes(file.type), {
-    message: "Only PDF files are supported.",
-  })
-  .refine((file) => file.size <= MAX_FILE_SIZE, {
-    message: "PDF files must be 50MB or smaller.",
-  });
+const pdfFileSchema = z.custom<File | null>((value) => value === null || isFile(value), {
+  message: "Please upload a valid PDF file.",
+}).superRefine((file, ctx) => {
+  if (file === null) {
+    ctx.addIssue({
+      code: z.ZodIssueCode.custom,
+      message: "Please upload a PDF file.",
+    });
+    return;
+  }
+
+  if (!ACCEPTED_PDF_TYPES.includes(file.type)) {
+    ctx.addIssue({
+      code: z.ZodIssueCode.custom,
+      message: "Only PDF files are supported.",
+    });
+  }
+
+  if (file.size > MAX_FILE_SIZE) {
+    ctx.addIssue({
+      code: z.ZodIssueCode.custom,
+      message: "PDF files must be 50MB or smaller.",
+    });
+  }
+});
 
 const coverImageSchema = z
   .custom<File | null>((value) => value === null || isFile(value), {
@@ -53,10 +65,10 @@ export const uploadFormSchema = z.object({
     .string()
     .trim()
     .min(1, "Please enter the author name."),
-  voice: z
+  persona: z
     .string()
-    .refine((value): value is VoiceOptionKey => value in voiceOptions, {
-      message: "Choose an assistant voice.",
+    .refine((value): value is PersonaOptionKey => value in voiceOptions, {
+      message: "Choose an assistant persona.",
     }),
 });
 
@@ -68,5 +80,5 @@ export const uploadFormDefaults: UploadFormInput = {
   coverImage: null,
   title: "",
   author: "",
-  voice: DEFAULT_VOICE as VoiceOptionKey,
+  persona: DEFAULT_VOICE as PersonaOptionKey,
 };
