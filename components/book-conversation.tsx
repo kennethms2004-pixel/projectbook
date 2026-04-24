@@ -2,12 +2,17 @@
 
 import { Loader2, Mic, MicOff, PhoneOff } from "lucide-react";
 import Image from "next/image";
-import { useEffect, useRef } from "react";
+import Link from "next/link";
+import { useCallback, useEffect, useRef, useState } from "react";
 
+import { useSubscription } from "@/hooks/use-subscription";
 import { useVapi } from "@/hooks/use-vapi";
+import {
+  endVoiceSession,
+  startVoiceSession,
+} from "@/lib/actions/voice-session.actions";
 
 const FALLBACK_COVER = "/assets/book-cover.svg";
-const MAX_SESSION_SECONDS = 15 * 60;
 
 type BookConversationProps = {
   book: {
@@ -30,6 +35,35 @@ function formatDuration(seconds: number) {
 }
 
 export function BookConversation({ book }: BookConversationProps) {
+  const subscription = useSubscription();
+  const sessionIdRef = useRef<string | null>(null);
+  const [planBlockMessage, setPlanBlockMessage] = useState<string | null>(null);
+
+  const defaultMaxSeconds =
+    Number.isFinite(subscription.limits.maxMinutesPerSession)
+      ? subscription.limits.maxMinutesPerSession * 60
+      : 60 * 60;
+
+  const handleBeforeStart = useCallback(async () => {
+    setPlanBlockMessage(null);
+    const result = await startVoiceSession(book._id);
+    if (!result.success) {
+      if (result.code === "session_limit_reached") {
+        setPlanBlockMessage(result.message);
+      }
+      return { ok: false as const, message: result.message };
+    }
+    sessionIdRef.current = result.sessionId;
+    return { ok: true as const, maxSessionSeconds: result.maxSessionSeconds };
+  }, [book._id]);
+
+  const handleSessionEnd = useCallback(async (durationSeconds: number) => {
+    const id = sessionIdRef.current;
+    if (!id) return;
+    sessionIdRef.current = null;
+    await endVoiceSession(id, durationSeconds);
+  }, []);
+
   const {
     status,
     isSessionActive,
@@ -37,12 +71,18 @@ export function BookConversation({ book }: BookConversationProps) {
     isAssistantSpeaking,
     transcript,
     elapsedSeconds,
+    maxSessionSeconds,
     errorMessage,
     voiceLabel,
     start,
     stop,
     toggleMute,
-  } = useVapi({ book });
+  } = useVapi({
+    book,
+    maxSessionSeconds: defaultMaxSeconds,
+    onBeforeStart: handleBeforeStart,
+    onSessionEnd: handleSessionEnd,
+  });
 
   const scrollRef = useRef<HTMLDivElement | null>(null);
 
@@ -53,10 +93,12 @@ export function BookConversation({ book }: BookConversationProps) {
   }, [transcript]);
 
   useEffect(() => {
-    if (isSessionActive && elapsedSeconds >= MAX_SESSION_SECONDS) {
+    if (isSessionActive && elapsedSeconds >= maxSessionSeconds) {
       void stop();
     }
-  }, [isSessionActive, elapsedSeconds, stop]);
+  }, [isSessionActive, elapsedSeconds, maxSessionSeconds, stop]);
+
+  const maxDurationLabel = formatDuration(maxSessionSeconds);
 
   const statusLabel = (() => {
     switch (status) {
@@ -152,7 +194,7 @@ export function BookConversation({ book }: BookConversationProps) {
 
             <span className="vapi-status-indicator">
               <span className="vapi-status-text font-mono">
-                {formatDuration(elapsedSeconds)}/15:00
+                {formatDuration(elapsedSeconds)}/{maxDurationLabel}
               </span>
             </span>
 
@@ -175,11 +217,26 @@ export function BookConversation({ book }: BookConversationProps) {
             )}
           </div>
 
-          {errorMessage && (
+          {planBlockMessage ? (
+            <div
+              role="alert"
+              className="flex flex-wrap items-center gap-3 rounded-xl border border-[#fde68a] bg-[#fffbeb] px-3 py-2 text-xs text-[#78350f]"
+            >
+              <span className="flex-1 min-w-0">{planBlockMessage}</span>
+              <Link
+                href="/subscriptions"
+                className="shrink-0 rounded-lg bg-[#1e40af] px-3 py-1.5 text-xs font-semibold text-white shadow-[0_6px_14px_rgba(30,64,175,0.25)] hover:bg-[#1e3a8a]"
+              >
+                Upgrade plan
+              </Link>
+            </div>
+          ) : null}
+
+          {errorMessage && !planBlockMessage ? (
             <p className="text-xs text-red-600" role="alert">
               {errorMessage}
             </p>
-          )}
+          ) : null}
         </div>
       </section>
 
