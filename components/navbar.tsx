@@ -7,7 +7,6 @@ import {
   useUser,
   UserButton,
 } from "@clerk/nextjs";
-import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 
@@ -59,17 +58,42 @@ export function Navbar() {
           href="/"
           className="text-foreground flex items-center gap-2.5 font-sans font-bold transition-opacity hover:opacity-80"
         >
-          <Image
-            src="/assets/logo.png"
-            alt=""
+          <span
             aria-hidden="true"
-            width={42}
-            height={26}
-            style={{ height: "26px", width: "auto" }}
-            priority
-          />
+            className="flex size-9 items-center justify-center rounded-[0.65rem] bg-gradient-to-br from-[#1e3a8a] via-[#2563eb] to-[#0284c7] shadow-[0_6px_14px_rgba(30,64,175,0.35)] ring-1 ring-white/20"
+          >
+            <svg
+              viewBox="0 0 24 24"
+              fill="none"
+              xmlns="http://www.w3.org/2000/svg"
+              className="size-5 text-white"
+            >
+              <path
+                d="M4 6.5C4 5.67 4.67 5 5.5 5H10.5C11.33 5 12 5.67 12 6.5V18.5L10.5 17.5H5.5C4.67 17.5 4 16.83 4 16V6.5Z"
+                fill="currentColor"
+                opacity="0.95"
+              />
+              <path
+                d="M12 6.5C12 5.67 12.67 5 13.5 5H15V18H13.5L12 18.5V6.5Z"
+                fill="currentColor"
+                opacity="0.7"
+              />
+              <path
+                d="M17.5 8.5V15.5"
+                stroke="currentColor"
+                strokeWidth="1.5"
+                strokeLinecap="round"
+              />
+              <path
+                d="M20 10.5V13.5"
+                stroke="currentColor"
+                strokeWidth="1.5"
+                strokeLinecap="round"
+              />
+            </svg>
+          </span>
           <span className="text-lg font-bold tracking-tight not-underline sm:text-[1.05rem]">
-            BookAlive
+            Book<span className="text-[#2563eb]">Alive</span>
           </span>
         </Link>
 

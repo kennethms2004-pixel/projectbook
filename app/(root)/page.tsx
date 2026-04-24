@@ -1,5 +1,4 @@
 import { auth } from "@clerk/nextjs/server";
-import Image from "next/image";
 import Link from "next/link";
 
 import { BookCard } from "@/components/book-card";
@@ -47,7 +46,7 @@ export default async function Home() {
   return (
     <main className="flex flex-1 bg-[#f4f6fb]">
       <div className="mx-auto flex w-full max-w-6xl flex-1 flex-col px-4 py-6 sm:px-6 sm:py-8">
-        <section className="grid w-full gap-8 rounded-[1.2rem] bg-[#c9e7ff] px-7 py-7 sm:px-8 sm:py-8 lg:mt-3 lg:grid-cols-[310px_minmax(250px,1fr)_170px] lg:items-center lg:gap-6 lg:px-7 lg:py-8 xl:grid-cols-[340px_minmax(270px,1fr)_190px] xl:px-8">
+        <section className="grid w-full gap-8 rounded-[1.2rem] bg-[#c9e7ff] px-7 py-7 sm:px-8 sm:py-8 lg:mt-3 lg:grid-cols-[1fr_minmax(220px,280px)] lg:items-center lg:gap-10 lg:px-9 lg:py-10">
           <div className="max-w-[20rem]">
             <h1 className="font-serif text-[2.6rem] leading-[0.98] font-semibold tracking-[-0.04em] text-[#0a1530] sm:text-[3rem] lg:text-[3.25rem]">
               Books, Alive.
@@ -67,19 +66,6 @@ export default async function Home() {
               <span className="text-base leading-none">+</span>
               Add new book
             </Link>
-          </div>
-
-          <div className="flex justify-center lg:justify-center">
-            <div className="w-full max-w-[15rem] sm:max-w-[17rem] lg:max-w-[16.5rem] xl:max-w-[18rem]">
-              <Image
-                src="/assets/hero-illustration.png"
-                alt="A stack of books with a globe and reading accessories"
-                width={491}
-                height={352}
-                priority
-                className="h-auto w-full object-contain"
-              />
-            </div>
           </div>
 
           <aside className="w-full max-w-[18rem] justify-self-center rounded-[1rem] bg-white px-3.5 py-4 shadow-[0_12px_26px_rgba(15,30,60,0.1)] ring-1 ring-[#e5ecf7] lg:max-w-none">
