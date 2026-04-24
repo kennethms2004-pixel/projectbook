@@ -92,13 +92,21 @@ export async function checkBookExists(
   }
 }
 
-export async function getAllBooks(): Promise<
-  ActionResult<{ books: SerializedBook[] }>
-> {
+export async function getAllBooks(
+  clerkId?: string
+): Promise<ActionResult<{ books: SerializedBook[] }>> {
   try {
+    if (!clerkId) {
+      return {
+        success: true,
+        message: "No user signed in.",
+        data: { books: [] },
+      };
+    }
+
     await connectToDatabase();
 
-    const books = await Book.find({}).sort({ createdAt: -1 }).lean();
+    const books = await Book.find({ clerkId }).sort({ createdAt: -1 }).lean();
 
     const serialized = books.map(
       (book) => serializeData(book as unknown as SerializedBook) as SerializedBook

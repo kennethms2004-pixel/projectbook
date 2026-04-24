@@ -1,3 +1,4 @@
+import { auth } from "@clerk/nextjs/server";
 import Image from "next/image";
 import Link from "next/link";
 
@@ -30,7 +31,8 @@ const steps = [
 ] as const;
 
 export default async function Home() {
-  const result = await getAllBooks();
+  const { userId } = await auth();
+  const result = await getAllBooks(userId ?? undefined);
   const realBooks = result.success ? result.data?.books ?? [] : [];
 
   const books: Book[] = realBooks.map((book) => ({
