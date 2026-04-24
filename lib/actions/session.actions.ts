@@ -11,6 +11,10 @@ import {
   getUserPlan,
 } from "@/lib/subscriptions.server";
 
+function logServerError(scope: string, error: unknown) {
+  console.error(`[session.actions:${scope}]`, error);
+}
+
 export type StartVoiceSessionResult =
   | {
       success: true;
@@ -28,6 +32,10 @@ export type StartVoiceSessionResult =
       message: string;
     };
 
+/**
+ * Start a voice session: enforces monthly session limits (calendar month via
+ * `billingPeriodStart` on `VoiceSession`) and returns plan-aware max duration.
+ */
 export async function startVoiceSession(
   bookId: string
 ): Promise<StartVoiceSessionResult> {
@@ -100,7 +108,7 @@ export async function startVoiceSession(
       maxSessionSeconds,
     };
   } catch (error) {
-    console.error("[voice-session.actions:startVoiceSession]", error);
+    logServerError("startVoiceSession", error);
     return {
       success: false,
       code: "internal_error",
@@ -129,7 +137,7 @@ export async function endVoiceSession(
 
     return { success: true };
   } catch (error) {
-    console.error("[voice-session.actions:endVoiceSession]", error);
+    logServerError("endVoiceSession", error);
     return { success: false };
   }
 }

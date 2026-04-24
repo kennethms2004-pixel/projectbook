@@ -10,6 +10,7 @@ import {
   type PlanMeta,
   type PlanSlug,
 } from "@/lib/subscription-constants";
+import { resolvePlanFromHas } from "@/lib/subscription-plan";
 
 export type UseSubscriptionResult = {
   isLoaded: boolean;
@@ -23,14 +24,8 @@ export function useSubscription(): UseSubscriptionResult {
   const { isLoaded, isSignedIn, has } = useAuth();
 
   const plan = useMemo<PlanSlug>(() => {
-    if (!isLoaded || !has) return "free";
-    try {
-      if (has({ plan: "pro" })) return "pro";
-      if (has({ plan: "standard" })) return "standard";
-    } catch {
-      return "free";
-    }
-    return "free";
+    if (!isLoaded) return "free";
+    return resolvePlanFromHas(has ?? undefined);
   }, [isLoaded, has]);
 
   return {

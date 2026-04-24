@@ -13,6 +13,7 @@ import {
   type PlanLimits,
   type PlanSlug,
 } from "@/lib/subscription-constants";
+import { resolvePlanFromHas } from "@/lib/subscription-plan";
 
 export type PlanResult = {
   userId: string | null;
@@ -23,21 +24,10 @@ export type PlanResult = {
 
 type HasCheck = (params: { plan: string }) => boolean;
 
-function resolvePlan(has: HasCheck | undefined | null): PlanSlug {
-  if (!has) return "free";
-  try {
-    if (has({ plan: "pro" })) return "pro";
-    if (has({ plan: "standard" })) return "standard";
-  } catch {
-    return "free";
-  }
-  return "free";
-}
-
 export async function getUserPlan(): Promise<PlanResult> {
   const authResult = await auth();
   const userId = authResult.userId ?? null;
-  const plan = resolvePlan(authResult.has as HasCheck | undefined);
+  const plan = resolvePlanFromHas(authResult.has as HasCheck | undefined);
 
   return {
     userId,

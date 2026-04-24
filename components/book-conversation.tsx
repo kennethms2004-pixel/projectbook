@@ -10,7 +10,7 @@ import { useVapi } from "@/hooks/use-vapi";
 import {
   endVoiceSession,
   startVoiceSession,
-} from "@/lib/actions/voice-session.actions";
+} from "@/lib/actions/session.actions";
 
 const FALLBACK_COVER = "/assets/book-cover.svg";
 

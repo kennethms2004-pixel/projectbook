@@ -6,6 +6,8 @@ export type PlanLimits = {
   maxBooks: number;
   maxSessionsPerMonth: number;
   maxMinutesPerSession: number;
+  /** When false, session history UI / retention features are disabled (free tier). */
+  sessionHistoryEnabled: boolean;
 };
 
 export type PlanMeta = {
@@ -20,16 +22,19 @@ export const PLAN_LIMITS: Record<PlanSlug, PlanLimits> = {
     maxBooks: 1,
     maxSessionsPerMonth: 5,
     maxMinutesPerSession: 5,
+    sessionHistoryEnabled: false,
   },
   standard: {
     maxBooks: 10,
     maxSessionsPerMonth: 100,
     maxMinutesPerSession: 15,
+    sessionHistoryEnabled: true,
   },
   pro: {
     maxBooks: 100,
     maxSessionsPerMonth: Number.POSITIVE_INFINITY,
     maxMinutesPerSession: 60,
+    sessionHistoryEnabled: true,
   },
 };
 
