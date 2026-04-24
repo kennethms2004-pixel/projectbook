@@ -153,6 +153,14 @@ export async function POST(request: Request) {
 
         const { query, bookId } = parseArguments(call.function);
 
+        console.log("[vapi:search-book] tool call", {
+          toolCallId,
+          name: call.function?.name,
+          hasQuery: Boolean(query),
+          hasBookId: Boolean(bookId),
+          bookId,
+        });
+
         if (!query || !bookId) {
           return {
             toolCallId,
