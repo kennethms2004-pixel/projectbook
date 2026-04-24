@@ -207,25 +207,22 @@ export function useVapi({ book }: UseVapiOptions): UseVapiReturn {
         return;
       }
 
-      await vapi.start(
-        assistantId,
-        {
-          variableValues: {
-            bookId: book._id,
-            bookTitle: book.title,
-            bookAuthor: book.author,
-            voiceName: voiceLabel,
-          },
-          voice: {
-            provider: "11labs",
-            voiceId,
-            stability: VOICE_SETTINGS.stability,
-            similarityBoost: VOICE_SETTINGS.similarityBoost,
-            style: VOICE_SETTINGS.style,
-            useSpeakerBoost: VOICE_SETTINGS.useSpeakerBoost,
-          },
-        } as never,
-      );
+      await vapi.start(assistantId, {
+        variableValues: {
+          bookId: book._id,
+          bookTitle: book.title,
+          bookAuthor: book.author,
+          voiceName: voiceLabel,
+        },
+        voice: {
+          provider: "11labs",
+          voiceId,
+          stability: VOICE_SETTINGS.stability,
+          similarityBoost: VOICE_SETTINGS.similarityBoost,
+          style: VOICE_SETTINGS.style,
+          useSpeakerBoost: VOICE_SETTINGS.useSpeakerBoost,
+        },
+      });
     } catch (error) {
       console.error("[useVapi] failed to start", error);
       setStatus("error");
