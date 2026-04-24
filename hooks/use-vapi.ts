@@ -123,7 +123,7 @@ export function useVapi({ book }: UseVapiOptions): UseVapiReturn {
         return;
       }
 
-      const role = message.role as "user" | "assistant";
+      const role = message.role;
       const text = message.transcript;
       const isFinal = message.transcriptType !== "partial";
 
@@ -245,16 +245,14 @@ export function useVapi({ book }: UseVapiOptions): UseVapiReturn {
   const toggleMute = useCallback(() => {
     const vapi = vapiRef.current;
     if (!vapi) return;
-    setIsMuted((prev) => {
-      const next = !prev;
-      try {
-        vapi.setMuted(next);
-      } catch (error) {
-        console.error("[useVapi] setMuted failed", error);
-      }
-      return next;
-    });
-  }, []);
+    const next = !isMuted;
+    try {
+      vapi.setMuted(next);
+      setIsMuted(next);
+    } catch (error) {
+      console.error("[useVapi] setMuted failed", error);
+    }
+  }, [isMuted]);
 
   return {
     status,

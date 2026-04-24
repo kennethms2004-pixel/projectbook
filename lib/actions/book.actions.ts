@@ -317,6 +317,7 @@ export type SegmentSearchHit = {
 };
 
 const SEARCH_RESULT_LIMIT = 3;
+const MAX_KEYWORD_LENGTH = 50;
 const REGEX_METACHARS = /[.*+?^${}()|[\]\\]/g;
 const STOP_WORDS = new Set([
   "a", "an", "and", "the", "is", "are", "was", "were", "be", "to", "of",
@@ -329,7 +330,12 @@ function extractKeywords(query: string) {
   return query
     .toLowerCase()
     .split(/[^a-z0-9]+/i)
-    .filter((word) => word.length >= 3 && !STOP_WORDS.has(word));
+    .filter(
+      (word) =>
+        word.length >= 3 &&
+        word.length <= MAX_KEYWORD_LENGTH &&
+        !STOP_WORDS.has(word)
+    );
 }
 
 export async function searchBookSegments(
@@ -342,7 +348,12 @@ export async function searchBookSegments(
     return [];
   }
 
-  await connectToDatabase();
+  try {
+    await connectToDatabase();
+  } catch (error) {
+    logServerError("searchBookSegments:connect", error);
+    return [];
+  }
 
   try {
     const textResults = await BookSegment.find(
