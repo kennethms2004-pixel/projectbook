@@ -82,7 +82,7 @@ export function BookConversation({ book }: BookConversationProps) {
         ? "bg-amber-500 animate-pulse"
         : status === "error"
           ? "bg-red-500"
-          : "bg-[#b6a89a]";
+          : "bg-[#64748b]";
 
   const handleMicClick = async () => {
     if (isSessionActive || status === "connecting") {
@@ -96,7 +96,7 @@ export function BookConversation({ book }: BookConversationProps) {
     <div className="book-page-container">
       <section className="vapi-header-card">
         <div className="relative mx-auto shrink-0 sm:mx-0">
-          <div className="overflow-hidden rounded-lg bg-[#f8f1e7] shadow-[0_12px_28px_rgba(79,63,43,0.18)]">
+          <div className="overflow-hidden rounded-lg bg-[#eef2f9] shadow-[0_12px_28px_rgba(15,30,60,0.18)]">
             <Image
               src={book.coverUrl || FALLBACK_COVER}
               alt={`Cover of ${book.title}`}
@@ -127,10 +127,10 @@ export function BookConversation({ book }: BookConversationProps) {
 
         <div className="min-w-0 flex-1 space-y-3">
           <div>
-            <h1 className="font-serif text-2xl font-bold tracking-tight text-[#241913] sm:text-3xl">
+            <h1 className="font-serif text-2xl font-bold tracking-tight text-[#0a1530] sm:text-3xl">
               {book.title}
             </h1>
-            <p className="mt-1 text-sm text-[#6f6257] sm:text-base">
+            <p className="mt-1 text-sm text-[#4a5b7b] sm:text-base">
               by {book.author}
             </p>
           </div>
@@ -160,7 +160,7 @@ export function BookConversation({ book }: BookConversationProps) {
               <button
                 type="button"
                 onClick={toggleMute}
-                className="vapi-status-indicator hover:bg-[#f3e4c7]"
+                className="vapi-status-indicator hover:bg-[#dbeafe]"
                 aria-label={isMuted ? "Unmute microphone" : "Mute microphone"}
               >
                 {isMuted ? (
@@ -186,7 +186,7 @@ export function BookConversation({ book }: BookConversationProps) {
       <section className="transcript-container">
         {transcript.length === 0 ? (
           <div className="transcript-empty">
-            <Mic className="size-12 text-[#2f241d]" aria-hidden />
+            <Mic className="size-12 text-[#10213f]" aria-hidden />
             <p className="transcript-empty-text">
               {isSessionActive ? "Listening…" : "No conversation yet"}
             </p>
@@ -206,8 +206,8 @@ export function BookConversation({ book }: BookConversationProps) {
                 key={`${message.timestamp}-${idx}`}
                 className={`max-w-[80%] rounded-2xl px-4 py-3 text-sm ${
                   message.role === "assistant"
-                    ? "self-start bg-[#f3e4c7] text-[#241913]"
-                    : "self-end bg-[#241913] text-white"
+                    ? "self-start bg-[#dbeafe] text-[#0a1530]"
+                    : "self-end bg-[#0a1530] text-white"
                 } ${message.isFinal ? "" : "opacity-70 italic"}`}
               >
                 {message.text}

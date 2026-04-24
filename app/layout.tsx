@@ -21,9 +21,9 @@ const monaSans = Mona_Sans({
 });
 
 export const metadata: Metadata = {
-  title: "bookified",
+  title: "BookAlive",
   description:
-    "Transform your books into interactive AI conversations. Upload PDFs and chat with your books using voice.",
+    "Bring your books to life. Upload PDFs and have real voice conversations with them, powered by AI.",
 };
 
 export default function RootLayout({

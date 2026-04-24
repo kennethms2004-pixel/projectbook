@@ -10,7 +10,7 @@ import { cn } from "@/lib/utils";
 export const dynamic = "force-dynamic";
 
 const FALLBACK_COVER = "/assets/book-cover.svg";
-const DEFAULT_COVER_COLOR = "#f8f4e9";
+const DEFAULT_COVER_COLOR = "#eef2f9";
 
 const steps = [
   {
@@ -45,24 +45,23 @@ export default async function Home() {
   }));
 
   return (
-    <main className="flex flex-1 bg-[#fdfcfb]">
+    <main className="flex flex-1 bg-[#f4f6fb]">
       <div className="mx-auto flex w-full max-w-6xl flex-1 flex-col px-4 py-6 sm:px-6 sm:py-8">
-        <section className="grid w-full gap-8 rounded-[1.2rem] bg-[#f3e5bf] px-7 py-7 sm:px-8 sm:py-8 lg:mt-3 lg:grid-cols-[310px_minmax(250px,1fr)_170px] lg:items-center lg:gap-6 lg:px-7 lg:py-8 xl:grid-cols-[340px_minmax(270px,1fr)_190px] xl:px-8">
+        <section className="grid w-full gap-8 rounded-[1.2rem] bg-[#c9e7ff] px-7 py-7 sm:px-8 sm:py-8 lg:mt-3 lg:grid-cols-[310px_minmax(250px,1fr)_170px] lg:items-center lg:gap-6 lg:px-7 lg:py-8 xl:grid-cols-[340px_minmax(270px,1fr)_190px] xl:px-8">
           <div className="max-w-[20rem]">
-            <h1 className="font-serif text-[2.6rem] leading-[0.98] font-semibold tracking-[-0.04em] text-[#241913] sm:text-[3rem] lg:text-[3.25rem]">
-              Your Library
+            <h1 className="font-serif text-[2.6rem] leading-[0.98] font-semibold tracking-[-0.04em] text-[#0a1530] sm:text-[3rem] lg:text-[3.25rem]">
+              Books, Alive.
             </h1>
 
-            <p className="mt-3 max-w-[18rem] text-[0.95rem] leading-6 text-[#78685d] sm:text-[0.98rem]">
-              Convert your books into interactive AI conversations. Listen,
-              learn, and discuss your favorite reads.
+            <p className="mt-3 max-w-[18rem] text-[0.95rem] leading-6 text-[#5b6b8a] sm:text-[0.98rem]">
+              Upload a PDF and talk with your book. BookAlive gives every book a voice — ask, explore, learn.
             </p>
 
             <Link
               href="/books/new"
               className={cn(
                 buttonVariants({ variant: "outline", size: "lg" }),
-                "mt-6 inline-flex h-auto rounded-xl border-[#e4d8c7] bg-white px-4 py-3 text-[0.98rem] font-semibold text-[#2a211c] shadow-[0_10px_24px_rgba(93,76,53,0.08)] no-underline transition-transform hover:bg-white hover:translate-y-[-1px]"
+                "mt-6 inline-flex h-auto rounded-xl border-[#dde5f2] bg-white px-4 py-3 text-[0.98rem] font-semibold text-[#10213f] shadow-[0_10px_24px_rgba(15,30,60,0.08)] no-underline transition-transform hover:bg-white hover:translate-y-[-1px]"
               )}
             >
               <span className="text-base leading-none">+</span>
@@ -83,25 +82,25 @@ export default async function Home() {
             </div>
           </div>
 
-          <aside className="w-full max-w-[18rem] justify-self-center rounded-[1rem] bg-white px-3.5 py-4 shadow-[0_12px_26px_rgba(107,84,56,0.1)] ring-1 ring-[#eadfce] lg:max-w-none">
+          <aside className="w-full max-w-[18rem] justify-self-center rounded-[1rem] bg-white px-3.5 py-4 shadow-[0_12px_26px_rgba(15,30,60,0.1)] ring-1 ring-[#e5ecf7] lg:max-w-none">
             <div className="space-y-3">
               {steps.map((step, index) => (
                 <div
                   key={step.number}
                   className={cn(
                     "flex items-start gap-2.5",
-                    index < steps.length - 1 && "border-b border-[#f3ede4] pb-3"
+                    index < steps.length - 1 && "border-b border-[#eef2f9] pb-3"
                   )}
                 >
-                  <span className="mt-0.5 flex size-7 shrink-0 items-center justify-center rounded-full border border-[#d8cec1] text-[0.78rem] font-semibold text-[#5a4b40]">
+                  <span className="mt-0.5 flex size-7 shrink-0 items-center justify-center rounded-full border border-[#c7d2e7] text-[0.78rem] font-semibold text-[#334155]">
                     {step.number}
                   </span>
 
                   <div className="min-w-0">
-                    <h2 className="text-[0.97rem] leading-5 font-semibold text-[#2e2620]">
+                    <h2 className="text-[0.97rem] leading-5 font-semibold text-[#10213f]">
                       {step.title}
                     </h2>
-                    <p className="mt-0.5 text-[0.82rem] leading-5 text-[#7c6f63]">
+                    <p className="mt-0.5 text-[0.82rem] leading-5 text-[#5b6b8a]">
                       {step.description}
                     </p>
                   </div>
@@ -119,18 +118,18 @@ export default async function Home() {
               ))}
             </div>
           ) : (
-            <div className="rounded-[1.2rem] border border-dashed border-[#e4d8c7] bg-white/60 px-6 py-12 text-center">
-              <p className="text-[1.05rem] font-semibold text-[#2e2620]">
+            <div className="rounded-[1.2rem] border border-dashed border-[#dde5f2] bg-white/60 px-6 py-12 text-center">
+              <p className="text-[1.05rem] font-semibold text-[#10213f]">
                 No books yet.
               </p>
-              <p className="mt-1 text-[0.92rem] text-[#7c6f63]">
+              <p className="mt-1 text-[0.92rem] text-[#5b6b8a]">
                 Upload your first PDF to start an AI conversation.
               </p>
               <Link
                 href="/books/new"
                 className={cn(
                   buttonVariants({ variant: "outline", size: "lg" }),
-                  "mt-5 inline-flex h-auto rounded-xl border-[#e4d8c7] bg-white px-4 py-3 text-[0.95rem] font-semibold text-[#2a211c] no-underline hover:bg-white"
+                  "mt-5 inline-flex h-auto rounded-xl border-[#dde5f2] bg-white px-4 py-3 text-[0.95rem] font-semibold text-[#10213f] no-underline hover:bg-white"
                 )}
               >
                 <span className="text-base leading-none">+</span>

@@ -32,17 +32,17 @@ function VoiceOptionCard({
     <label
       htmlFor={id}
       className={cn(
-        "flex cursor-pointer items-start gap-3 rounded-2xl border bg-white px-4 py-4 shadow-[0_10px_24px_rgba(79,63,43,0.04)] transition-colors",
+        "flex cursor-pointer items-start gap-3 rounded-2xl border bg-white px-4 py-4 shadow-[0_10px_24px_rgba(15,30,60,0.04)] transition-colors",
         checked
-          ? "border-[#b78e67] bg-[#fff9ee] ring-2 ring-[#b78e67]/25"
-          : "border-[#e3d8ca] hover:border-[#ccb9a2]",
+          ? "border-[#2563eb] bg-[#f0f7ff] ring-2 ring-[#2563eb]/25"
+          : "border-[#dde5f2] hover:border-[#93a4c9]",
         disabled && "cursor-not-allowed opacity-70"
       )}
     >
       <RadioGroupItem id={id} value={value} disabled={disabled} className="mt-1" />
       <div className="space-y-1">
-        <p className="text-lg font-semibold text-[#322720]">{name}</p>
-        <p className="text-sm leading-6 text-[#7e7266]">{description}</p>
+        <p className="text-lg font-semibold text-[#10213f]">{name}</p>
+        <p className="text-sm leading-6 text-[#5b6b8a]">{description}</p>
       </div>
     </label>
   );
@@ -64,7 +64,7 @@ export function VoiceSelector({
       className="space-y-5"
     >
       <div className="space-y-3">
-        <p className="text-sm font-medium uppercase tracking-[0.18em] text-[#8a7e73]">
+        <p className="text-sm font-medium uppercase tracking-[0.18em] text-[#64748b]">
           Male Personas
         </p>
         <div className="grid gap-3 md:grid-cols-3">
@@ -88,7 +88,7 @@ export function VoiceSelector({
       </div>
 
       <div className="space-y-3">
-        <p className="text-sm font-medium uppercase tracking-[0.18em] text-[#8a7e73]">
+        <p className="text-sm font-medium uppercase tracking-[0.18em] text-[#64748b]">
           Female Personas
         </p>
         <div className="grid gap-3 md:grid-cols-2">

@@ -56,21 +56,21 @@ export function FileUploadField({
       <label
         htmlFor={inputId}
         className={cn(
-          "block cursor-pointer rounded-[1.6rem] border border-[#e4d8c7] bg-white px-6 py-10 shadow-[0_12px_28px_rgba(79,63,43,0.05)] transition-colors",
-          !disabled && "hover:border-[#ccb9a2]",
+          "block cursor-pointer rounded-[1.6rem] border border-[#dde5f2] bg-white px-6 py-10 shadow-[0_12px_28px_rgba(15,30,60,0.05)] transition-colors",
+          !disabled && "hover:border-[#93a4c9]",
           disabled && "cursor-not-allowed opacity-70"
         )}
       >
         <div className="flex flex-col items-center gap-4 text-center">
-          <span className="flex size-16 items-center justify-center rounded-full bg-[#f8f1e7] text-[#7c6a58]">
+          <span className="flex size-16 items-center justify-center rounded-full bg-[#eef2f9] text-[#7c6a58]">
             {icon}
           </span>
 
           <div className="space-y-1.5">
-            <p className="text-xl font-semibold text-[#44372e]">
+            <p className="text-xl font-semibold text-[#10213f]">
               {value ? value.name : buttonLabel}
             </p>
-            <p className="text-sm leading-6 text-[#8a7e73]">
+            <p className="text-sm leading-6 text-[#64748b]">
               {value ? `Selected file • ${formatFileSize(value.size)}` : helperText}
             </p>
           </div>
@@ -89,8 +89,8 @@ export function FileUploadField({
             onChange(null);
           }}
           className={cn(
-            "inline-flex items-center gap-2 rounded-full border border-[#dccfbe] bg-[#fffaf3] px-3 py-1.5 text-sm font-medium text-[#6c5648] transition-colors",
-            !disabled && "hover:border-[#c8b8a5] hover:text-[#3d485e]",
+            "inline-flex items-center gap-2 rounded-full border border-[#c7d2e7] bg-[#f0f7ff] px-3 py-1.5 text-sm font-medium text-[#4a5b7b] transition-colors",
+            !disabled && "hover:border-[#93a4c9] hover:text-[#0284c7]",
             disabled && "cursor-not-allowed opacity-60"
           )}
         >

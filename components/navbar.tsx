@@ -69,7 +69,7 @@ export function Navbar() {
             priority
           />
           <span className="text-lg font-bold tracking-tight not-underline sm:text-[1.05rem]">
-            Bookified
+            BookAlive
           </span>
         </Link>
 

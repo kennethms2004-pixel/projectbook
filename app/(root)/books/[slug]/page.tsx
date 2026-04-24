@@ -29,7 +29,7 @@ export default async function BookDetailPage({ params }: BookPageProps) {
   const book = result.data;
 
   return (
-    <main className="flex flex-1 bg-[#fdfcfb]">
+    <main className="flex flex-1 bg-[#f4f6fb]">
       <Link href="/" aria-label="Back to library" className="back-btn-floating">
         <ArrowLeft className="size-5" aria-hidden />
       </Link>

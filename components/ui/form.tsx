@@ -94,7 +94,7 @@ function FormLabel({
   return (
     <Label
       data-slot="form-label"
-      className={cn(error && "text-[#8a3923]", className)}
+      className={cn(error && "text-[#dc2626]", className)}
       htmlFor={formItemId}
       {...props}
     />
@@ -129,7 +129,7 @@ function FormDescription({
     <p
       data-slot="form-description"
       id={formDescriptionId}
-      className={cn("text-sm leading-6 text-[#85786c]", className)}
+      className={cn("text-sm leading-6 text-[#64748b]", className)}
       {...props}
     />
   );
@@ -150,7 +150,7 @@ function FormMessage({
     <p
       data-slot="form-message"
       id={formMessageId}
-      className={cn("text-sm font-medium text-[#8a3923]", className)}
+      className={cn("text-sm font-medium text-[#dc2626]", className)}
       {...props}
     >
       {body}

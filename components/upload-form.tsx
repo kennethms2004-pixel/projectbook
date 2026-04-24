@@ -271,7 +271,7 @@ export function UploadForm() {
             name="pdfFile"
             render={({ field }) => (
               <FormItem>
-                <FormLabel className="text-2xl font-semibold text-[#332821]">
+                <FormLabel className="text-2xl font-semibold text-[#10213f]">
                   Book PDF File
                 </FormLabel>
                 <FormControl>
@@ -295,7 +295,7 @@ export function UploadForm() {
             name="coverImage"
             render={({ field }) => (
               <FormItem>
-                <FormLabel className="text-2xl font-semibold text-[#332821]">
+                <FormLabel className="text-2xl font-semibold text-[#10213f]">
                   Cover Image (Optional)
                 </FormLabel>
                 <FormControl>
@@ -320,7 +320,7 @@ export function UploadForm() {
               name="title"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel className="text-2xl font-semibold text-[#332821]">
+                  <FormLabel className="text-2xl font-semibold text-[#10213f]">
                     Title
                   </FormLabel>
                   <FormControl>
@@ -340,7 +340,7 @@ export function UploadForm() {
               name="author"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel className="text-2xl font-semibold text-[#332821]">
+                  <FormLabel className="text-2xl font-semibold text-[#10213f]">
                     Author Name
                   </FormLabel>
                   <FormControl>
@@ -361,7 +361,7 @@ export function UploadForm() {
             name="persona"
             render={({ field }) => (
               <FormItem>
-                <FormLabel className="text-2xl font-semibold text-[#332821]">
+                <FormLabel className="text-2xl font-semibold text-[#10213f]">
                   Choose Assistant Persona
                 </FormLabel>
                 <FormControl>
@@ -381,7 +381,7 @@ export function UploadForm() {
               type="submit"
               size="lg"
               disabled={isSubmitting}
-              className="h-[3.4rem] w-full rounded-2xl bg-[#7a4323] px-6 py-4 text-lg font-semibold text-white shadow-[0_14px_32px_rgba(122,67,35,0.24)] hover:bg-[#66371d]"
+              className="h-[3.4rem] w-full rounded-2xl bg-[#1e40af] px-6 py-4 text-lg font-semibold text-white shadow-[0_14px_32px_rgba(30,64,175,0.24)] hover:bg-[#1e3a8a]"
             >
               {isSubmitting ? "Creating experience..." : "Begin Synthesis"}
             </Button>
