@@ -8,9 +8,12 @@ import { searchBookSegments } from "@/lib/actions/book.actions";
 export const dynamic = "force-dynamic";
 
 const SEARCH_TOOL_NAMES = new Set([
-  "searchBook",
+  "searchbook",
+  "searchbooks",
   "search-book",
+  "search-books",
   "search_book",
+  "search_books",
 ]);
 const NO_INFO_MESSAGE = "No information found about this topic.";
 const EXCERPT_LENGTH = 900;
@@ -52,7 +55,7 @@ function parseArguments(fn: ToolCall["function"]): ToolArgs {
 
 function isSearchToolCall(call: ToolCall) {
   const name = call.function?.name;
-  return typeof name === "string" && SEARCH_TOOL_NAMES.has(name);
+  return typeof name === "string" && SEARCH_TOOL_NAMES.has(name.toLowerCase());
 }
 
 function trimExcerpt(content: string) {
