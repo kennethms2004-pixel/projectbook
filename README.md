@@ -85,14 +85,14 @@ NEXT_PUBLIC_CLERK_AFTER_SIGN_UP_URL=/
 3. Optionally upload a cover image.
 4. Enter the book title and author name.
 5. Choose an assistant voice.
-6. Submit the form to run the mocked synthesis flow.
+6. Submit the form to ingest the book.
 
 ## Validation Notes
 
 - PDF uploads are required and limited to 50MB.
 - Cover images are optional and limited to JPG, PNG, or WebP under 10MB.
 - Voice selection is validated against the configured voice list in `lib/constants.ts`.
-- Submission is currently mocked; no storage or backend ingestion is wired yet.
+- On submit, the PDF and cover image are uploaded to Vercel Blob, the PDF is parsed client-side into text segments, and the book record plus its segments are persisted to MongoDB via `createBook` and `saveBookSegments`.
 
 ## Deploy
 

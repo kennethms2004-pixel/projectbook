@@ -6,6 +6,7 @@ const BookSchema = new Schema<IBook>(
       type: String,
       required: true,
       trim: true,
+      index: true,
     },
     title: {
       type: String,

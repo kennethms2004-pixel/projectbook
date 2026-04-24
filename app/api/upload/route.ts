@@ -40,9 +40,10 @@ export async function POST(request: Request): Promise<NextResponse> {
   const shouldHandleCallback =
     process.env.VERCEL === "1" || Boolean(process.env.VERCEL_BLOB_CALLBACK_URL);
 
+  let authenticatedClerkId: string | null = null;
+
   try {
     const body = (await request.json()) as HandleUploadBody;
-    let authenticatedClerkId: string | null = null;
 
     if (body.type === "blob.generate-client-token") {
       const { userId } = await auth();
@@ -93,6 +94,14 @@ export async function POST(request: Request): Promise<NextResponse> {
 
     return NextResponse.json(jsonResponse);
   } catch (error) {
+    const errorLog = {
+      component: "api/upload",
+      message: error instanceof Error ? error.message : "Unknown error",
+      name: error instanceof Error ? error.name : "Error",
+      userId: authenticatedClerkId ? authenticatedClerkId.substring(0, 8) + "..." : "unknown",
+    };
+    console.error(JSON.stringify(errorLog));
+
     const message = error instanceof Error ? error.message : "Failed to handle upload.";
     const status = message === "Unauthorized" ? 401 : 400;
 

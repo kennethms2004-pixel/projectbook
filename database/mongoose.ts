@@ -39,7 +39,9 @@ export async function connectToDatabase() {
         bufferCommands: false,
       })
       .then((mongooseInstance) => {
-        console.log("MongoDB connected");
+        if (process.env.NODE_ENV !== "production") {
+          console.log("MongoDB connected");
+        }
 
         return mongooseInstance;
       });

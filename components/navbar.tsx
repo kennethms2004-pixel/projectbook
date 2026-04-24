@@ -61,10 +61,11 @@ export function Navbar() {
         >
           <Image
             src="/assets/logo.png"
-            alt="Bookified"
+            alt=""
+            aria-hidden="true"
             width={42}
             height={26}
-            className="h-[26px] w-auto"
+            style={{ height: "26px", width: "auto" }}
             priority
           />
           <span className="text-lg font-bold tracking-tight not-underline sm:text-[1.05rem]">

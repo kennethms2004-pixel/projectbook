@@ -6,6 +6,8 @@ import { buttonVariants } from "@/components/ui/button";
 import { getAllBooks } from "@/lib/actions/book.actions";
 import { cn } from "@/lib/utils";
 
+export const dynamic = "force-dynamic";
+
 const FALLBACK_COVER = "/assets/book-cover.svg";
 const DEFAULT_COVER_COLOR = "#f8f4e9";
 
